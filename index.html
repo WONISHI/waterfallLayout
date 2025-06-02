@@ -6,11 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        body{
-            margin:0;
-            padding:0
+        body {
+            margin: 0;
+            padding: 0
+        }
+        #app{
+            width:fit-content;
         }
 
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row img {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 
@@ -18,15 +30,6 @@
     <div id="app"></div>
     <script type="module">
         import WaterfallLayout from './index.js';
-        // function getPicsumUrls(count = 10) {
-        //     const urls = [];
-        //     for (let i = 0; i < count; i++) {
-        //         const width = Math.floor(Math.random() * 100) + 200;  // 200 ~ 299
-        //         const height = Math.floor(Math.random() * 100) + 200; // 200 ~ 299
-        //         urls.push(`https://picsum.photos/${width}/${height}`);
-        //     }
-        //     return urls;
-        // }
         const res = await new WaterfallLayout({
             urls: [
                 './src/96-100x100.jpg',
@@ -53,11 +56,11 @@
                 box.style.height = item.scaledHeight + 'px';
                 const img = document.createElement('img');
                 img.src = item.url;
-                const info = document.createElement('div');
-                info.className = 'image-info';
-                info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
+                // const info = document.createElement('div');
+                // info.className = 'image-info';
+                // info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
                 box.appendChild(img);
-                box.appendChild(info);
+                // box.appendChild(info);
                 rowEl.appendChild(box);
             });
 

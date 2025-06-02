@@ -6,7 +6,20 @@ const WaterfallLayoutType = {
 export default class WaterfallLayout {
   constructor(options = {}) {
     this.$options = this.normalizeOptions(options);
-    this.strategy = createStrategy(this.$options.type, this.$options);
+    return this.init();
+  }
+  async init() {
+    const strategy = createStrategy(this.$options.type, this.$options);
+
+    if (strategy instanceof AscendingStrategy) {
+      // 等待图片加载完成 + 布局完成
+      const result = await strategy.collectImageData(this.$options.urls);
+      strategy.result = strategy.layout(result);
+    }
+
+    return {
+      strategy,
+    };
   }
   normalizeOptions(options) {
     return {
@@ -50,11 +63,11 @@ class AscendingStrategy extends BaseStrategy {
     this.gap = options.gap;
     this._scaleToFit = null;
     this.finish = false;
-    if (options.urls.length) {
-      this.collectImageData(options.urls).then((data) => {
-        this.result = this.layout(data);
-      });
-    }
+    // if (options.urls.length) {
+    //   this.collectImageData(options.urls).then((data) => {
+    //     this.result = this.layout(data);
+    //   });
+    // }
   }
   async collectImageData(urls) {
     const iterator = urls[Symbol.iterator]();
