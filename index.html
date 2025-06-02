@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+            margin:0;
+            padding:0
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script type="module">
+        import WaterfallLayout from './index.js';
+        // function getPicsumUrls(count = 10) {
+        //     const urls = [];
+        //     for (let i = 0; i < count; i++) {
+        //         const width = Math.floor(Math.random() * 100) + 200;  // 200 ~ 299
+        //         const height = Math.floor(Math.random() * 100) + 200; // 200 ~ 299
+        //         urls.push(`https://picsum.photos/${width}/${height}`);
+        //     }
+        //     return urls;
+        // }
+        const res = await new WaterfallLayout({
+            urls: [
+                './src/96-100x100.jpg',
+                './src/1000-50x50.jpg',
+                './src/947-180x180.jpg',
+                './src/128-295x209.jpg',
+                './src/200-233x275.jpg',
+                './src/567-281x264.jpg',
+                './src/701-210x248.jpg'
+            ]
+        })
+        console.log(res)
+        const result = res.strategy.result
+        const app = document.getElementById('app');
+
+        result.forEach(row => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'row';
+
+            row.forEach(item => {
+                const box = document.createElement('div');
+                box.className = 'image-box';
+                box.style.width = item.scaledWidth + 'px';
+                box.style.height = item.scaledHeight + 'px';
+                const img = document.createElement('img');
+                img.src = item.url;
+                const info = document.createElement('div');
+                info.className = 'image-info';
+                info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
+                box.appendChild(img);
+                box.appendChild(info);
+                rowEl.appendChild(box);
+            });
+
+            app.appendChild(rowEl);
+        });
+    </script>
+</body>
+
+</html>
