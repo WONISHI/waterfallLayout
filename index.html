@@ -10,15 +10,17 @@
             margin: 0;
             padding: 0
         }
-        #app{
-            width:fit-content;
+
+        #app {
+            width: fit-content;
         }
 
         .row {
             display: flex;
             gap: 10px;
         }
-        .row:not(:last-child){
+
+        .row:not(:last-child) {
             margin-bottom: 10px;
         }
 
@@ -34,6 +36,7 @@
     <script type="module">
         import WaterfallLayout from './index.js';
         const res = await new WaterfallLayout({
+            type: 'equal-width',
             urls: [
                 './src/408-20x100.jpg',
                 './src/209-100x20.jpg',
@@ -49,30 +52,30 @@
             ]
         })
         console.log(res)
-        const result = res.strategy.result
-        const app = document.getElementById('app');
+        // const result = res.strategy.result
+        // const app = document.getElementById('app');
 
-        result.forEach(row => {
-            const rowEl = document.createElement('div');
-            rowEl.className = 'row';
+        // result.forEach(row => {
+        //     const rowEl = document.createElement('div');
+        //     rowEl.className = 'row';
 
-            row.forEach(item => {
-                const box = document.createElement('div');
-                box.className = 'image-box';
-                box.style.width = item.scaledWidth + 'px';
-                box.style.height = item.scaledHeight + 'px';
-                const img = document.createElement('img');
-                img.src = item.url;
-                // const info = document.createElement('div');
-                // info.className = 'image-info';
-                // info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
-                box.appendChild(img);
-                // box.appendChild(info);
-                rowEl.appendChild(box);
-            });
+        //     row.forEach(item => {
+        //         const box = document.createElement('div');
+        //         box.className = 'image-box';
+        //         box.style.width = item.scaledWidth + 'px';
+        //         box.style.height = item.scaledHeight + 'px';
+        //         const img = document.createElement('img');
+        //         img.src = item.url;
+        //         // const info = document.createElement('div');
+        //         // info.className = 'image-info';
+        //         // info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
+        //         box.appendChild(img);
+        //         // box.appendChild(info);
+        //         rowEl.appendChild(box);
+        //     });
 
-            app.appendChild(rowEl);
-        });
+        //     app.appendChild(rowEl);
+        // });
     </script>
 </body>
 

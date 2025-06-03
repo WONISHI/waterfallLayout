@@ -10,15 +10,12 @@ export default class WaterfallLayout {
   }
   async init() {
     const strategy = createStrategy(this.$options.type, this.$options);
-
-    if (strategy instanceof AscendingStrategy) {
-      // 等待图片加载完成 + 布局完成
-      const result = await strategy.collectImageData(this.$options.urls);
-      strategy.result = strategy.layout(result);
-    }
+    const result = await strategy.collectImageData(this.$options.urls);
+    console.log(result);
+    // strategy.result = strategy.layout(result);
 
     return {
-      strategy,
+      strategy:result,
     };
   }
   normalizeOptions(options) {
@@ -52,6 +49,14 @@ class BaseStrategy {
       img.src = url;
     });
   }
+  toAbsoluteUrl(path) {
+    try {
+      const url = new URL(path);
+      return url.href;
+    } catch (e) {
+      return new URL(path, window.location.href).href;
+    }
+  }
 }
 
 class AscendingStrategy extends BaseStrategy {
@@ -63,11 +68,6 @@ class AscendingStrategy extends BaseStrategy {
     this.gap = options.gap;
     this._scaleToFit = null;
     this.finish = false;
-    // if (options.urls.length) {
-    //   this.collectImageData(options.urls).then((data) => {
-    //     this.result = this.layout(data);
-    //   });
-    // }
   }
   async collectImageData(urls) {
     const iterator = urls[Symbol.iterator]();
@@ -84,13 +84,13 @@ class AscendingStrategy extends BaseStrategy {
         (rowBuffer.length - 1) * this.gap;
       if (totalWidth > this.clientWidth) {
         const scaledRow = this.scaleToFit(
-          rowBuffer.slice(0, -1), // 当前行，去掉最后一张
+          rowBuffer.slice(0, -1),
           this.clientWidth - (rowBuffer.length - 2) * this.gap,
           this.rowIndex
         );
-        this.result.push(...scaledRow); // ⭐ 展平写入
+        this.result.push(...scaledRow);
         this.rowIndex++;
-        const last = rowBuffer.pop(); // 留给下一行
+        const last = rowBuffer.pop();
         rowBuffer.length = 0;
         rowBuffer.push(last);
       }
@@ -105,15 +105,6 @@ class AscendingStrategy extends BaseStrategy {
       this.result.push(...scaledRow); // ⭐ 继续展平写入
     }
     return this.result;
-  }
-
-  toAbsoluteUrl(path) {
-    try {
-      const url = new URL(path);
-      return url.href;
-    } catch (e) {
-      return new URL(path, window.location.href).href;
-    }
   }
   scaleToFit(arr, remainingWidth, rowIndex) {
     if (arr.length === 1) {
@@ -160,15 +151,64 @@ class AscendingStrategy extends BaseStrategy {
         columnIndex,
       }))
     );
-
     return result;
   }
 }
 
 class EqualWidthStrategy extends BaseStrategy {
+  constructor(options) {
+    super(options);
+    this.options = options;
+    this.result = [];
+    this.count = this.options.count || 3;
+  }
+  async collectImageData(urls) {
+    const iterator = urls[Symbol.iterator]();
+    const rowBuffer = [];
+    let index = 0;
+    while (true) {
+      const { value, done } = iterator.next();
+      if (done) break;
+      const url = this.toAbsoluteUrl(value);
+      const { width, height } = await this.getImageSize(url);
+      rowBuffer.push({ index, url, width, height });
+      if ((index + 1) % this.count === 0) {
+        const scaledRow = this.scaleToFit(
+          rowBuffer,
+          this.options.containerWidth - (this.count - 1) * this.options.gap,
+          this.rowIndex
+        );
+        this.result.push(scaledRow);
+        this.rowIndex++;
+        rowBuffer.length = 0;
+      }
+      index++;
+    }
+    if (rowBuffer.length) {
+      const scaledRow = this.scaleToFit(
+        rowBuffer,
+        this.options.containerWidth - (rowBuffer.length - 1) * this.options.gap,
+        this.rowIndex
+      );
+      this.result.push(scaledRow);
+    }
+    return this.result;
+  }
   layout(items) {
     console.log("使用等宽瀑布流策略进行布局");
     // 实现：等宽顺序排布，自动换行
+  }
+  scaleToFit(arr, availableWidth, rowIndex) {
+    const totalOriginalWidth = arr.reduce((sum, item) => sum + item.width, 0);
+    const scale = availableWidth / totalOriginalWidth;
+    return arr.map((item, columnIndex) => ({
+      ...item,
+      scale,
+      rowIndex,
+      columnIndex,
+      scaledWidth: item.width * scale,
+      scaledHeight: item.height * scale,
+    }));
   }
 }
 
