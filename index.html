@@ -28,6 +28,13 @@
             width: 100%;
             height: 100%;
         }
+
+        #app {
+            height: 200px;
+            border: 1px solid #000;
+            width: 375px;
+            overflow: auto;
+        }
     </style>
 </head>
 
@@ -35,8 +42,9 @@
     <div id="app"></div>
     <script type="module">
         import WaterfallLayout from './index.js';
-        const res = await new WaterfallLayout({
-            type: 'equal-width',
+        new WaterfallLayout({
+            type: 'ascending',
+            lazyLoad:'#app',
             urls: [
                 './src/408-20x100.jpg',
                 './src/209-100x20.jpg',
@@ -49,9 +57,35 @@
                 './src/200-233x275.jpg',
                 './src/567-281x264.jpg',
                 './src/701-210x248.jpg'
-            ]
+            ],
+            lazyLoadCallback: (res) => {
+                console.log(res)
+                const result = `
+                        ${res.rows.map(row => {
+                    return `
+                            <div class="row">
+                                ${row.map(column => {
+                        return `
+                                    <div class="image-box" style="width:${column.scaledWidth}px;height:${column.scaledHeight}px;margin-right:${res.gap}px">
+                                    <img src="${column.url}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                    </div>
+                                `;
+                    }).join('')}
+                            </div>
+                            `;
+                }).join('')}
+                        `;
+                // 插入到 #app 元素下
+                const container = document.querySelector('#app');
+                if (container) {
+                    container.insertAdjacentHTML('beforeend', result);
+                } else {
+                    console.warn('#app 元素未找到');
+                }
+
+            }
         })
-        console.log(res)
+        // console.log(res)
         // const result = res.strategy.result
         // const app = document.getElementById('app');
 
