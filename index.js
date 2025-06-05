@@ -1,4 +1,4 @@
-// 优化版 Waterfall Layout 实现，支持懒加载配置（使用 IntersectionObserver）并支持 count 控制与详细信息返回
+// 优化版 Waterfall Layout 实现，支持懒加载配置（使用 IntersectionObserver）并支持 count 控制
 const WaterfallLayoutType = {
     Ascending: "ascending",
     EqualWidth: "equal-width",
@@ -8,32 +8,31 @@ const WaterfallLayoutType = {
   export default class WaterfallLayout {
     constructor(options = {}) {
       this.$options = this.normalizeOptions(options);
+      this.lazyIndex = 0;
+      this.totalLoaded = 0;
       return this.init();
     }
   
     async init() {
       const strategy = createStrategy(this.$options.type, this.$options);
-      const result = await strategy.collectImageData(this.$options.urls);
-  
-      const response = {
-        rows: result,
-        type: this.$options.type,
-        detail: {
-          rowCount: result.length,
-          imageCount: result.flat().length,
-          containerWidth: this.$options.containerWidth,
-          gap: this.$options.gap,
-          count: this.$options.count,
-        },
-      };
+      this.strategy = strategy;
   
       if (this.$options.lazyLoad) {
-        this.observeLazyTarget(() => this.$options.lazyLoadCallback?.(response));
+        this.container = typeof this.$options.lazyLoad === 'string'
+          ? document.querySelector(this.$options.lazyLoad)
+          : document.documentElement;
+        this.$options.urls = this.$options.urls.map(url => this.strategy.toAbsoluteUrl(url));
+        this.setupLazyLoad();
       } else {
+        const result = await strategy.collectImageData(this.$options.urls);
+        const response = {
+          rows: result,
+          type: this.$options.type,
+          detail: strategy.getDetail?.(),
+        };
         this.$options.success?.(response);
+        return response;
       }
-  
-      return response;
     }
   
     normalizeOptions(options) {
@@ -44,38 +43,53 @@ const WaterfallLayoutType = {
         containerWidth: 375,
         lazyLoad: false,
         count: null,
+        step: 10,
       };
       return { ...defaultOptions, ...options };
     }
   
-    observeLazyTarget(callback) {
-      const selector = this.$options.lazyLoad;
-      let target;
-  
-      if (typeof selector === 'string') {
-        target = document.querySelector(selector);
-      } else if (selector === true) {
-        target = document.documentElement;
-      }
-      console.log(target);
-      if (!target) return;
-  
+    setupLazyLoad() {
       const sentinel = document.createElement('div');
+      sentinel.id = '__waterfall_trigger__';
       sentinel.style.cssText = 'width: 100%; height: 1px;';
-      target.appendChild(sentinel);
-  
-      const observer = new IntersectionObserver((entries, obs) => {
-        if (entries[0].isIntersecting) {
-          obs.disconnect();
-          sentinel.remove();
-          callback();
+      this.container.appendChild(sentinel);
+      const observer = new IntersectionObserver(async (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            observer.unobserve(entry.target);
+            await this.loadUntilFilled();
+            observer.observe(entry.target);
+          }
         }
       }, {
-        root: selector === true ? null : target,
+        root: this.container === document.documentElement ? null : this.container,
         threshold: 0.01,
       });
-      console.log("sentinel appended", sentinel, "to", target);
-      observer.observe(sentinel);
+  
+      this.loadUntilFilled().then(() => {
+        observer.observe(sentinel);
+      });
+    }
+  
+    async loadUntilFilled() {
+      const { urls, lazyLoadCallback, type } = this.$options;
+      const container = this.container;
+      const visibleHeight = container.clientHeight;
+      let lastHeight = container.scrollHeight;
+  
+      while (this.lazyIndex < urls.length && container.scrollHeight <= visibleHeight + 50) {
+        const batch = urls[this.lazyIndex];
+        const imgData = await this.strategy.getImageSize(batch);
+        this.strategy.pushImage(imgData, batch);
+        this.lazyIndex++;
+  
+        const response = {
+          rows: this.strategy.rows,
+          type,
+          detail: this.strategy.getDetail?.(),
+        };
+        lazyLoadCallback?.(response);
+      }
     }
   }
   
@@ -132,45 +146,44 @@ const WaterfallLayoutType = {
       this.clientWidth = options.containerWidth;
       this.gap = options.gap;
       this.count = options.count;
+      this.rowBuffer = [];
     }
   
     async collectImageData(urls) {
       const images = await this.fetchImageSizes(urls);
-      const rowBuffer = [];
+      return this.insertImages(images);
+    }
   
-      if (this.count === 1) {
-        const scaledRow = this.scaleToFit(images, this.clientWidth - (images.length - 1) * this.gap, 0);
+    insertImages(images) {
+      for (const img of images) {
+        this.pushImage(img, img.url);
+      }
+      return this.rows;
+    }
+  
+    pushImage(img, url) {
+      const item = { ...img, url };
+  
+      if (this.count === 1 && this.rowIndex === 0) {
+        const scaledRow = this.scaleToFit([item], this.clientWidth, this.rowIndex++);
         this.rows.push(scaledRow);
-        return this.rows;
+        return;
       }
   
-      for (const item of images) {
-        rowBuffer.push(item);
-        const totalWidth = rowBuffer.reduce((sum, img) => sum + img.width, 0) + (rowBuffer.length - 1) * this.gap;
+      this.rowBuffer.push(item);
+      const totalWidth = this.rowBuffer.reduce((sum, i) => sum + i.width, 0) + (this.rowBuffer.length - 1) * this.gap;
   
-        if (totalWidth > this.clientWidth) {
-          const scaledRow = this.scaleToFit(
-            rowBuffer.slice(0, -1),
-            this.clientWidth - (rowBuffer.length - 2) * this.gap,
-            this.rowIndex++
-          );
-          this.rows.push(scaledRow);
-          const last = rowBuffer.pop();
-          rowBuffer.length = 0;
-          rowBuffer.push(last);
-        }
-      }
-  
-      if (rowBuffer.length) {
+      if (totalWidth > this.clientWidth) {
         const scaledRow = this.scaleToFit(
-          rowBuffer,
-          this.clientWidth - (rowBuffer.length - 1) * this.gap,
+          this.rowBuffer.slice(0, -1),
+          this.clientWidth - (this.rowBuffer.length - 2) * this.gap,
           this.rowIndex++
         );
         this.rows.push(scaledRow);
+        const last = this.rowBuffer.pop();
+        this.rowBuffer.length = 0;
+        this.rowBuffer.push(last);
       }
-  
-      return this.rows;
     }
   
     scaleToFit(arr, availableWidth, rowIndex) {
@@ -201,6 +214,12 @@ const WaterfallLayoutType = {
         };
       });
     }
+  
+    getDetail() {
+      return {
+        rows: this.rows.length,
+      };
+    }
   }
   
   class EqualWidthStrategy extends BaseStrategy {
@@ -209,28 +228,30 @@ const WaterfallLayoutType = {
       this.rows = [];
       this.count = options.count || 3;
       this.rowIndex = 0;
+      this.buffer = [];
     }
   
     async collectImageData(urls) {
       const images = await this.fetchImageSizes(urls);
-      const rowBuffer = [];
+      return this.insertImages(images);
+    }
   
-      for (let i = 0; i < images.length; i++) {
-        rowBuffer.push(images[i]);
-  
-        if ((i + 1) % this.count === 0) {
-          const scaledRow = this.scaleToFit(rowBuffer, this.options.containerWidth - (this.count - 1) * this.options.gap, this.rowIndex++);
-          this.rows.push(scaledRow);
-          rowBuffer.length = 0;
-        }
+    insertImages(images) {
+      for (const img of images) {
+        this.pushImage(img, img.url);
       }
-  
-      if (rowBuffer.length) {
-        const scaledRow = this.scaleToFit(rowBuffer, this.options.containerWidth - (rowBuffer.length - 1) * this.options.gap, this.rowIndex++);
-        this.rows.push(scaledRow);
-      }
-  
       return this.rows;
+    }
+  
+    pushImage(img, url) {
+      const item = { ...img, url };
+      this.buffer.push(item);
+  
+      if (this.buffer.length === this.count) {
+        const scaledRow = this.scaleToFit(this.buffer, this.options.containerWidth - (this.count - 1) * this.options.gap, this.rowIndex++);
+        this.rows.push(scaledRow);
+        this.buffer.length = 0;
+      }
     }
   
     scaleToFit(arr, availableWidth, rowIndex) {
@@ -245,12 +266,17 @@ const WaterfallLayoutType = {
         scaledHeight: item.height * scale,
       }));
     }
+  
+    getDetail() {
+      return {
+        totalRows: this.rows.length,
+      };
+    }
   }
   
   class EqualWidthAscendingStrategy extends BaseStrategy {
     layout(items) {
       console.log("使用等宽登高瀑布流策略进行布局");
-      // TODO: 实现等宽登高布局逻辑
     }
   
     async collectImageData(urls) {

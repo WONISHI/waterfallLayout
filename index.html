@@ -76,9 +76,9 @@
                 }).join('')}
                         `;
                 // 插入到 #app 元素下
-                const container = document.querySelector('#app');
+                const container = document.querySelector('#__waterfall_trigger__');
                 if (container) {
-                    container.insertAdjacentHTML('beforeend', result);
+                    container.insertAdjacentHTML('beforebegin', result);
                 } else {
                     console.warn('#app 元素未找到');
                 }
