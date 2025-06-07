@@ -23,7 +23,7 @@ export default class BaseStrategy {
   set scrollIndex(newVal) {
     this._scrollIndex = newVal;
     if (this._hasInitialLoaded) {
-      this.loadUntilFilled?.();
+      this.loadUntilFilled();
     }
   }
 

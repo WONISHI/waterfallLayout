@@ -11,22 +11,24 @@ export default class AscendingStrategy extends BaseStrategy {
       this.rowBuffer = [];
       this.lazyCallback = options.lazyLoadCallback;
       this.step = options.step || 10;
+      console.log('step',this.step)
       this._hasInitialLoaded = false;
     }
   
     async setupLazyLoad() {
       const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
       const batch = [];
+  
       while (this.lazyIndex < urls.length) {
         const nextUrls = urls.slice(this.lazyIndex, this.lazyIndex + this.step);
         const data = await this.fetchImageSizes(nextUrls);
         batch.push(...data);
-        await this.append(data);
         this.lazyIndex += data.length;
   
-        const filled = this._checkFilled();
-        if (filled) break;
+        if (this._checkFilled()) break;
       }
+  
+      await this.append(batch, { from: 'initial' });
   
       this._hasInitialLoaded = true;
       this._bindScroll();
@@ -59,11 +61,11 @@ export default class AscendingStrategy extends BaseStrategy {
       if (this.lazyIndex >= urls.length) return;
       const nextBatch = urls.slice(this.lazyIndex, this.lazyIndex + this.step).map(url => this.toAbsoluteUrl(url));
       const data = await this.fetchImageSizes(nextBatch);
-      await this.append(data);
+      await this.append(data, { from: 'scroll' });
       this.lazyIndex += data.length;
     }
   
-    async append(data = []) {
+    async append(data = [], extra = {}) {
       for (const img of data) {
         this.pushImage(img, img.url || "");
       }
@@ -71,15 +73,19 @@ export default class AscendingStrategy extends BaseStrategy {
         rows: this.rows,
         type: this.options.type,
         detail: this.getDetail?.(),
+        from: extra.from || 'scroll',
+        scrollRowIndex: this.rows.length - 1,
       });
     }
   
     pushImage(img, url) {
       const item = { ...img, url };
       if (this.count === 1 && this.rowIndex === 0) {
-        const scaledRow = this.scaleToFit([
-          item
-        ], this.clientWidth, this.rowIndex++);
+        const scaledRow = this.scaleToFit(
+          [item],
+          this.clientWidth,
+          this.rowIndex++
+        );
         this.rows.push(scaledRow);
         return;
       }
@@ -138,6 +144,7 @@ export default class AscendingStrategy extends BaseStrategy {
       };
     }
   }
+  
   
   
   

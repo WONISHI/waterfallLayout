@@ -1,11 +1,11 @@
-import AscendingStrategy from "../AscendingStrategy/index"
-import EqualWidthStrategy from "../EqualWidthStrategy/index"
-import EqualWidthAscendingStrategy from "../EqualWidthAscendingStrategy/index"
+import AscendingStrategy from "../AscendingStrategy/index";
+import EqualWidthStrategy from "../EqualWidthStrategy/index";
+import EqualWidthAscendingStrategy from "../EqualWidthAscendingStrategy/index";
 export const WaterfallLayoutType = {
-    Ascending: "ascending",
-    EqualWidth: "equal-width",
-    EqualWidthAscending: "equal-width-ascending",
-  };
+  Ascending: "ascending",
+  EqualWidth: "equal-width",
+  EqualWidthAscending: "equal-width-ascending",
+};
 export function createStrategy(type, options) {
   switch (type) {
     case WaterfallLayoutType.Ascending:
