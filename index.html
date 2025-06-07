@@ -40,13 +40,13 @@
 
 <body>
     <div id="app"></div>
+    <script src="./dist/waterfalllayout.js"></script>
     <script type="module">
-        import WaterfallLayout from './src/index.js';
-        new WaterfallLayout({
+        new Waterfalllayout({
             type: 'ascending',
-            lazyLoad:'#app',
+            lazyLoad: '#app',
             urls: [
-                './src/assets/image/408-20x100.jpg',
+                { width: 20, height: 20 },
                 './src/assets/image/209-100x20.jpg',
                 './src/assets/image/96-100x100.jpg',
                 './src/assets/image/1000-50x50.jpg',
@@ -76,9 +76,9 @@
                 }).join('')}
                         `;
                 // 插入到 #app 元素下
-                const container = document.querySelector('#__waterfall_trigger__');
+                const container = document.querySelector('#app');
                 if (container) {
-                    container.insertAdjacentHTML('beforebegin', result);
+                    container.insertAdjacentHTML('beforeend', result);
                 } else {
                     console.warn('#app 元素未找到');
                 }
