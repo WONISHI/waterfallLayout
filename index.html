@@ -41,22 +41,22 @@
 <body>
     <div id="app"></div>
     <script type="module">
-        import WaterfallLayout from './index.js';
+        import WaterfallLayout from './src/index.js';
         new WaterfallLayout({
             type: 'ascending',
             lazyLoad:'#app',
             urls: [
-                './src/408-20x100.jpg',
-                './src/209-100x20.jpg',
-                './src/96-100x100.jpg',
-                './src/1000-50x50.jpg',
-                './src/947-180x180.jpg',
-                './src/100-200x150.jpg',
-                './src/165-50x100.jpg',
-                './src/128-295x209.jpg',
-                './src/200-233x275.jpg',
-                './src/567-281x264.jpg',
-                './src/701-210x248.jpg'
+                './src/assets/image/408-20x100.jpg',
+                './src/assets/image/209-100x20.jpg',
+                './src/assets/image/96-100x100.jpg',
+                './src/assets/image/1000-50x50.jpg',
+                './src/assets/image/947-180x180.jpg',
+                './src/assets/image/100-200x150.jpg',
+                './src/assets/image/165-50x100.jpg',
+                './src/assets/image/128-295x209.jpg',
+                './src/assets/image/200-233x275.jpg',
+                './src/assets/image/567-281x264.jpg',
+                './src/assets/image/701-210x248.jpg'
             ],
             lazyLoadCallback: (res) => {
                 console.log(res)
