@@ -11,24 +11,46 @@ export default class AscendingStrategy extends BaseStrategy {
       this.rowBuffer = [];
       this.lazyCallback = options.lazyLoadCallback;
       this.step = options.step || 10;
-      console.log('step',this.step)
       this._hasInitialLoaded = false;
+      this._initialCallbackEmitted = false;
     }
   
     async setupLazyLoad() {
       const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
-      const batch = [];
+      let pendingRows = [];
   
       while (this.lazyIndex < urls.length) {
         const nextUrls = urls.slice(this.lazyIndex, this.lazyIndex + this.step);
         const data = await this.fetchImageSizes(nextUrls);
-        batch.push(...data);
         this.lazyIndex += data.length;
+  
+        for (const img of data) {
+          const item = { ...img, url: img.url || '' };
+          this.rowBuffer.push(item);
+  
+          const totalWidth = this.rowBuffer.reduce((sum, i) => sum + i.width, 0) + (this.rowBuffer.length - 1) * this.gap;
+          if (totalWidth > this.clientWidth) {
+            const scaledRow = this.scaleToFit(
+              this.rowBuffer.slice(0, -1),
+              this.clientWidth - (this.rowBuffer.length - 2) * this.gap,
+              this.rowIndex++
+            );
+            pendingRows.push(scaledRow);
+  
+            const last = this.rowBuffer.pop();
+            this.rowBuffer.length = 0;
+            this.rowBuffer.push(last);
+          }
+        }
+  
+        if (pendingRows.length > 0) {
+          pendingRows.forEach(row => this.rows.push(row));
+          pendingRows = [];
+          await this._emitLazyCallback('initial');
+        }
   
         if (this._checkFilled()) break;
       }
-  
-      await this.append(batch, { from: 'initial' });
   
       this._hasInitialLoaded = true;
       this._bindScroll();
@@ -61,38 +83,42 @@ export default class AscendingStrategy extends BaseStrategy {
       if (this.lazyIndex >= urls.length) return;
       const nextBatch = urls.slice(this.lazyIndex, this.lazyIndex + this.step).map(url => this.toAbsoluteUrl(url));
       const data = await this.fetchImageSizes(nextBatch);
-      await this.append(data, { from: 'scroll' });
       this.lazyIndex += data.length;
-    }
   
-    async append(data = [], extra = {}) {
       for (const img of data) {
         this.pushImage(img, img.url || "");
       }
+  
+      await this._emitLazyCallback('scroll');
+    }
+  
+    async _emitLazyCallback(from) {
+      if (from === 'initial' && this._initialCallbackEmitted) return;
+      if (from === 'initial') this._initialCallbackEmitted = true;
+  
+      const detail = this.getDetail();
       this.lazyCallback?.({
-        rows: this.rows,
+        rows: JSON.parse(JSON.stringify(this.rows)),
         type: this.options.type,
-        detail: this.getDetail?.(),
-        from: extra.from || 'scroll',
-        scrollRowIndex: this.rows.length - 1,
+        detail,
+        from,
+        scrollRowIndex: this.rows.length - 1
       });
+    }
+  
+    append() {
+      // 保留空实现，兼容性调用
     }
   
     pushImage(img, url) {
       const item = { ...img, url };
       if (this.count === 1 && this.rowIndex === 0) {
-        const scaledRow = this.scaleToFit(
-          [item],
-          this.clientWidth,
-          this.rowIndex++
-        );
+        const scaledRow = this.scaleToFit([item], this.clientWidth, this.rowIndex++);
         this.rows.push(scaledRow);
         return;
       }
       this.rowBuffer.push(item);
-      const totalWidth =
-        this.rowBuffer.reduce((sum, i) => sum + i.width, 0) +
-        (this.rowBuffer.length - 1) * this.gap;
+      const totalWidth = this.rowBuffer.reduce((sum, i) => sum + i.width, 0) + (this.rowBuffer.length - 1) * this.gap;
       if (totalWidth > this.clientWidth) {
         const scaledRow = this.scaleToFit(
           this.rowBuffer.slice(0, -1),
@@ -139,12 +165,10 @@ export default class AscendingStrategy extends BaseStrategy {
     }
   
     getDetail() {
+      const validRows = this.rows.filter(row => Array.isArray(row) && row.length > 0);
       return {
-        rows: this.rows.length,
+        rows: validRows.length
       };
     }
   }
-  
-  
-  
   
