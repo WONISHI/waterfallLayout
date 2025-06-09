@@ -12,15 +12,9 @@ export default class WaterfallLayout {
     if (this.$options.lazyLoad) {
       strategy.setupLazyLoad();
     } else {
-      const result = await strategy.collectImageData(this.$options.urls);
-      const response = {
-        rows: result,
-        type: this.$options.type,
-        detail: strategy.getDetail?.(),
-      };
-      return { ...response, ...this.$options }
+      await strategy.collectImageData(this.$options.urls);
     }
-    
+    return this.strategy
   }
   normalizeOptions(options) {
     const defaultOptions = {

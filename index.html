@@ -42,10 +42,11 @@
     <div id="app"></div>
     <script src="./dist/waterfalllayout.js"></script>
     <script type="module">
-        new Waterfalllayout({
+        const res = await new Waterfalllayout({
             type: 'ascending',
             lazyLoad: '#app',
-            step:3,
+count:1,
+            step: 3,
             urls: [
                 { width: 20, height: 20 },
                 './src/assets/image/209-100x20.jpg',
@@ -86,31 +87,7 @@
 
             }
         })
-        // console.log(res)
-        // const result = res.strategy.result
-        // const app = document.getElementById('app');
-
-        // result.forEach(row => {
-        //     const rowEl = document.createElement('div');
-        //     rowEl.className = 'row';
-
-        //     row.forEach(item => {
-        //         const box = document.createElement('div');
-        //         box.className = 'image-box';
-        //         box.style.width = item.scaledWidth + 'px';
-        //         box.style.height = item.scaledHeight + 'px';
-        //         const img = document.createElement('img');
-        //         img.src = item.url;
-        //         // const info = document.createElement('div');
-        //         // info.className = 'image-info';
-        //         // info.textContent = `row ${item.rowIndex}, col ${item.columnIndex}`;
-        //         box.appendChild(img);
-        //         // box.appendChild(info);
-        //         rowEl.appendChild(box);
-        //     });
-
-        //     app.appendChild(rowEl);
-        // });
+        console.log(res)
     </script>
 </body>
 
