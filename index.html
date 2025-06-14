@@ -44,8 +44,7 @@
     <script type="module">
         const res = await new Waterfalllayout({
             type: 'ascending',
-            lazyLoad: '#app',
-count:1,
+            count: 1,
             step: 3,
             urls: [
                 { width: 20, height: 20 },
@@ -60,7 +59,7 @@ count:1,
                 './src/assets/image/567-281x264.jpg',
                 './src/assets/image/701-210x248.jpg'
             ],
-            lazyLoadCallback: (res) => {
+            success: (res) => {
                 console.log(res)
                 const result = `
                         ${res.rows.map(row => {
