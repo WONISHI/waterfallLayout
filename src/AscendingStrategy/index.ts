@@ -34,7 +34,6 @@ export default class AscendingStrategy extends BaseStrategy {
   async collectImageData() {
     const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
     const images = await this.fetchImageSizes(urls);
-    console.log(images);
     this.insertImages(images);
     this.success && this.success(this.waterfallResult());
   }
