@@ -1,22 +1,28 @@
 import babel from "rollup-plugin-babel";
 import serve from "rollup-plugin-serve";
+import typescript from '@rollup/plugin-typescript';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 
 export default {
-  input: "./src/index.js", //打包的入口文件
+  input: "./src/index.ts",
   output: {
-    file: "dist/waterfalllayout.js",
-    format: "umd", //打包的模块，可以在window上 Vue
-    name: "Waterfalllayout", //全局的Vue
-    sourcemap: true, //映射
+    file: "dist/waterfalllayout.umd.js",
+    format: "umd",
+    name: "Waterfalllayout",
+    sourcemap: true,
   },
   plugins: [
     babel({
-      exclude: "node_modules/**", //排除不需要转化
+      exclude: "node_modules/**",
     }),
     serve({
-      port: 3000, //设置端口号
-      contentBase: "", //如果是''表示当前目录
-      openPage: "/index.html", //打开的文件
+      port: 3000,
+      contentBase: "",
+      openPage: "/index.html",
     }),
+    resolve(),
+    commonjs(),
+    typescript({ tsconfig: './tsconfig.json' })
   ],
 };
