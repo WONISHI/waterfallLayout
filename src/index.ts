@@ -1,13 +1,12 @@
 import { createStrategy, WaterfallLayoutType } from "./utils";
-import type { WaterfallLayoutTypeValue } from "./utils";
 import type { WaterfallOptions } from "./typings";
 export default class WaterfallLayout {
-  public $options: WaterfallOptions<WaterfallLayoutTypeValue>;
+  public $options: WaterfallOptions;
   private strategy: any;
-  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
+  constructor(options: WaterfallOptions) {
     this.$options = this.normalizeOptions(options);
   }
-  static async create(options: WaterfallOptions<WaterfallLayoutTypeValue>): Promise<WaterfallLayout> {
+  static async create(options: WaterfallOptions): Promise<WaterfallLayout> {
     const instance = new WaterfallLayout(options);
     await instance.init();
     return instance;
@@ -22,7 +21,7 @@ export default class WaterfallLayout {
     }
     return this.strategy;
   }
-  normalizeOptions(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
+  normalizeOptions(options: WaterfallOptions) {
     const defaultOptions = {
       type: WaterfallLayoutType.Ascending,
       gap: 10,
@@ -32,6 +31,6 @@ export default class WaterfallLayout {
       count: null,
       step: 5,
     };
-    return { ...defaultOptions, ...options };
+    return Object.freeze({ ...defaultOptions, ...options });
   }
 }

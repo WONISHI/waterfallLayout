@@ -3,8 +3,8 @@ import type {
   WaterfallOptions,
   WaterfallItem,
   WaterfallDetailType,
+  WaterfallSource,
 } from "../typings";
-import type { WaterfallLayoutTypeValue } from "../utils";
 export default class AscendingStrategy extends BaseStrategy {
   private rows: WaterfallItem[][] = [];
   private rowIndex: number;
@@ -17,7 +17,7 @@ export default class AscendingStrategy extends BaseStrategy {
   private step: number;
   private success?: (data: any) => void;
   private lazyCallback?: (data: any) => void;
-  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
+  constructor(options: WaterfallOptions) {
     super(options);
     this.rows = [];
     this.rowIndex = 0;
@@ -32,9 +32,10 @@ export default class AscendingStrategy extends BaseStrategy {
     this._initialCallbackEmitted = false;
   }
   async collectImageData() {
-    const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
+    const urls = this.options.urls.map((url: WaterfallSource) =>
+      this.toAbsoluteUrl(url)
+    );
     const images = await this.fetchImageSizes(urls);
-    console.log(images);
     this.insertImages(images);
     this.success && this.success(this.waterfallResult());
   }
@@ -45,7 +46,9 @@ export default class AscendingStrategy extends BaseStrategy {
     return this.rows;
   }
   async setupLazyLoad() {
-    const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
+    const urls = this.options.urls.map((url: WaterfallSource) =>
+      this.toAbsoluteUrl(url)
+    );
     let pendingRows: WaterfallItem[][] = [];
 
     while (this.lazyIndex < urls.length) {
@@ -115,7 +118,7 @@ export default class AscendingStrategy extends BaseStrategy {
     if (this.lazyIndex >= urls.length) return;
     const nextBatch = urls
       .slice(this.lazyIndex, this.lazyIndex + this.step)
-      .map((url) => this.toAbsoluteUrl(url));
+      .map((url:WaterfallSource) => this.toAbsoluteUrl(url));
     const data = await this.fetchImageSizes(nextBatch);
     this.lazyIndex += data.length;
 
@@ -162,7 +165,6 @@ export default class AscendingStrategy extends BaseStrategy {
     const totalWidth =
       this.rowBuffer.reduce((sum, i) => sum + i.width, 0) +
       (this.rowBuffer.length - 1) * this.gap;
-    console.log(totalWidth, this.clientWidth);
     if (totalWidth > this.clientWidth) {
       const scaledRow = this.scaleToFit(
         this.rowBuffer.slice(0, -1),
@@ -176,7 +178,7 @@ export default class AscendingStrategy extends BaseStrategy {
     }
   }
 
-  scaleToFit(arr:WaterfallItem[], availableWidth:number, rowIndex:number) {
+  scaleToFit(arr: WaterfallItem[], availableWidth: number, rowIndex: number) {
     if (arr.length === 1) {
       const scale = availableWidth / arr[0].width;
       return [

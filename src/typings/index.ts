@@ -1,3 +1,6 @@
+import type { WaterfallLayoutType } from "../utils";
+export type WaterfallLayoutTypeValue =
+  (typeof WaterfallLayoutType)[keyof typeof WaterfallLayoutType];
 export interface WaterfallItem {
   width: number;
   height: number;
@@ -12,9 +15,9 @@ export interface WaterfallItem {
 export type WaterfallDetailType = "scroll" | "initial";
 export type WaterfallSource = string | WaterfallItem;
 export type WaterfallSourceList = Array<WaterfallSource>;
-export interface WaterfallOptions<T> {
+export interface WaterfallOptions {
   urls: WaterfallSourceList;
-  type: T;
+  type: WaterfallLayoutTypeValue;
   gap?: number;
   toFixed?: number;
   containerWidth: number;

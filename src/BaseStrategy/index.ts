@@ -4,16 +4,15 @@ import type {
   WaterfallSource,
   WaterfallItem,
 } from "../typings";
-import type { WaterfallLayoutTypeValue } from "../utils";
 export default class BaseStrategy {
-  public options: WaterfallOptions<WaterfallLayoutTypeValue>;
+  public options: WaterfallOptions;
   public lazyIndex: number;
   private totalLoaded: number;
   private _scrollIndex: number;
   public container: HTMLElement | null;
   private sizeCache: any;
   public _hasInitialLoaded: boolean = false;
-  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
+  constructor(options: WaterfallOptions) {
     this.options = options;
     this.sizeCache = new Map();
     this.lazyIndex = 0;

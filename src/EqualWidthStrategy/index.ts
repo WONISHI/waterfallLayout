@@ -1,12 +1,11 @@
 import BaseStrategy from "../BaseStrategy/index";
 import type { WaterfallOptions } from "../typings";
-import type { WaterfallLayoutTypeValue } from "../utils";
 export default class EqualWidthStrategy extends BaseStrategy {
   private rows: Array<any>;
   private count: number;
   private rowIndex: number;
   private buffer: Array<any>;
-  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
+  constructor(options: WaterfallOptions) {
     super(options);
     this.rows = [];
     this.count = options.count || 3;

@@ -42,7 +42,7 @@
     <div id="app"></div>
     <script src="./dist/waterfalllayout.umd.js"></script>
     <script type="module">
-        const res = await Waterfalllayout.create({
+        const wt = await Waterfalllayout.create({
             type: 'ascending',
             count: 1,
             step: 3,
@@ -63,15 +63,15 @@
                 console.log(res)
                 const result = `
                         ${res.rows.map(row => {
-                    return `
-                            <div class="row">
-                                ${row.map(column => {
-                        return `
-                                    <div class="image-box" style="width:${column.scaledWidth}px;height:${column.scaledHeight}px;margin-right:${res.gap}px">
-                                    <img src="${column.url}" alt="" style="width:100%;height:100%;object-fit:cover;">
-                                    </div>
-                                `;
-                    }).join('')}
+                            return `
+                                    <div class="row">
+                                        ${row.map(column => {
+                                            return `
+                                                        <div class="image-box" style="width:${column.scaledWidth}px;height:${column.scaledHeight}px;margin-right:${res.gap}px">
+                                                        <img src="${column.url}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                                        </div>
+                                                    `;
+                            }).join('')}
                             </div>
                             `;
                 }).join('')}
@@ -86,7 +86,7 @@
 
             }
         })
-        console.log(res)
+        console.log(wt)
     </script>
 </body>
 
