@@ -1,26 +1,42 @@
 import BaseStrategy from "../BaseStrategy/index";
-
+import type {
+  WaterfallOptions,
+  WaterfallItem,
+  WaterfallDetailType,
+} from "waterfall";
+import type { WaterfallLayoutTypeValue } from "../utils";
 export default class AscendingStrategy extends BaseStrategy {
-  constructor(options) {
+  private rows: WaterfallItem[][] = [];
+  private rowIndex: number;
+  private clientWidth: number;
+  private gap: number;
+  private count: number | undefined | null;
+  public _hasInitialLoaded: boolean;
+  private _initialCallbackEmitted: boolean;
+  private rowBuffer: any[];
+  private step: number;
+  private success?: (data: any) => void;
+  private lazyCallback?: (data: any) => void;
+  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
     super(options);
     this.rows = [];
     this.rowIndex = 0;
     this.clientWidth = options.containerWidth;
-    this.gap = options.gap;
+    this.gap = options.gap ?? 10;
     this.count = options.count;
     this.rowBuffer = [];
     this.lazyCallback = options.lazyLoadCallback;
     this.step = options.step || 10;
-    this.success=options.success;
+    this.success = options.success;
     this._hasInitialLoaded = false;
     this._initialCallbackEmitted = false;
   }
   async collectImageData() {
     const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
     const images = await this.fetchImageSizes(urls);
-    console.log(images)
+    console.log(images);
     this.insertImages(images);
-    this.success && this.success(this.waterfallResult())
+    this.success && this.success(this.waterfallResult());
   }
   insertImages(images) {
     for (const img of images) {
@@ -30,7 +46,7 @@ export default class AscendingStrategy extends BaseStrategy {
   }
   async setupLazyLoad() {
     const urls = this.options.urls.map((url) => this.toAbsoluteUrl(url));
-    let pendingRows = [];
+    let pendingRows: WaterfallItem[][] = [];
 
     while (this.lazyIndex < urls.length) {
       const nextUrls = urls.slice(this.lazyIndex, this.lazyIndex + this.step);
@@ -45,7 +61,7 @@ export default class AscendingStrategy extends BaseStrategy {
           this.rowBuffer.reduce((sum, i) => sum + i.width, 0) +
           (this.rowBuffer.length - 1) * this.gap;
         if (totalWidth > this.clientWidth) {
-          const scaledRow = this.scaleToFit(
+          const scaledRow: any = this.scaleToFit(
             this.rowBuffer.slice(0, -1),
             this.clientWidth - (this.rowBuffer.length - 2) * this.gap,
             this.rowIndex++
@@ -86,7 +102,8 @@ export default class AscendingStrategy extends BaseStrategy {
   _bindScroll() {
     this.container?.addEventListener("scroll", () => {
       if (!this._hasInitialLoaded) return;
-      const { scrollTop, clientHeight, scrollHeight } = this.container;
+      const { scrollTop, clientHeight, scrollHeight } = this
+        .container as HTMLElement;
       if (scrollTop + clientHeight >= scrollHeight - 50) {
         this.scrollIndex++;
       }
@@ -109,13 +126,13 @@ export default class AscendingStrategy extends BaseStrategy {
     await this._emitLazyCallback("scroll");
   }
 
-  async _emitLazyCallback(from) {
+  async _emitLazyCallback(from: WaterfallDetailType) {
     if (from === "initial" && this._initialCallbackEmitted) return;
     if (from === "initial") this._initialCallbackEmitted = true;
-    this.lazyCallback?.(this.waterfallResult(form));
+    this.lazyCallback?.(this.waterfallResult(from));
   }
 
-  waterfallResult(form) {
+  waterfallResult(form?: WaterfallDetailType) {
     const detail = this.getDetail();
     return {
       rows: JSON.parse(JSON.stringify(this.rows)),
@@ -145,7 +162,7 @@ export default class AscendingStrategy extends BaseStrategy {
     const totalWidth =
       this.rowBuffer.reduce((sum, i) => sum + i.width, 0) +
       (this.rowBuffer.length - 1) * this.gap;
-      console.log(totalWidth,this.clientWidth)
+    console.log(totalWidth, this.clientWidth);
     if (totalWidth > this.clientWidth) {
       const scaledRow = this.scaleToFit(
         this.rowBuffer.slice(0, -1),

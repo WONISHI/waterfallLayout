@@ -1,5 +1,19 @@
+import type {
+  WaterfallOptions,
+  WaterfallSourceList,
+  WaterfallSource,
+  WaterfallItem,
+} from "waterfall";
+import type { WaterfallLayoutTypeValue } from "../utils";
 export default class BaseStrategy {
-  constructor(options) {
+  public options: WaterfallOptions<WaterfallLayoutTypeValue>;
+  public lazyIndex: number;
+  private totalLoaded: number;
+  private _scrollIndex: number;
+  public container: HTMLElement | null;
+  private sizeCache: any;
+  public _hasInitialLoaded: boolean;
+  constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
     this.options = options;
     this.sizeCache = new Map();
     this.lazyIndex = 0;
@@ -11,8 +25,14 @@ export default class BaseStrategy {
 
   _initLazyContainer() {
     const target = this.options.lazyLoad;
-    if (target) {
-      this.container = typeof target === 'string' ? document.querySelector(target) : target;
+    if (typeof target === "string") {
+      this.container = document.querySelector(target);
+    } else if (target instanceof HTMLElement) {
+      this.container = target;
+    } else if (target === true) {
+      this.container = document.body; // 或指定默认容器
+    } else {
+      this.container = null;
     }
   }
 
@@ -23,7 +43,7 @@ export default class BaseStrategy {
   set scrollIndex(newVal) {
     this._scrollIndex = newVal;
     if (this._hasInitialLoaded) {
-      this.loadUntilFilled?.();
+      (this as any).loadUntilFilled?.();
     }
   }
 
@@ -36,28 +56,28 @@ export default class BaseStrategy {
     }
   }
 
-  async fetchImageSizes(urls) {
-    const batch = Array.from({ length: urls.length }, (_, i) =>
-      this.getImageSize(urls[i], i)
+  async fetchImageSizes(urls: WaterfallSourceList) {
+    const batch = Array.from({ length: urls.length }, (_, i: number) =>
+      this.getImageSize(urls[i])
     );
     return Promise.all(batch);
   }
 
-  getCacheKey(url) {
+  getCacheKey(url: WaterfallSource) {
     if (typeof url === "string") return url;
     if (url && typeof url === "object") return `${url.width}x${url.height}`;
     throw new Error("Invalid URL or size object");
   }
 
-  getCachedSize(url) {
+  getCachedSize(url: WaterfallSource) {
     return this.sizeCache.get(this.getCacheKey(url));
   }
 
-  setCachedSize(url, size) {
+  setCachedSize(url: WaterfallSource, size) {
     this.sizeCache.set(this.getCacheKey(url), size);
   }
 
-  async getImageSize(url) {
+  async getImageSize(url: WaterfallSource) {
     const cached = this.getCachedSize(url);
     if (cached) return cached;
     if (typeof url === "object" && url.width && url.height) {
@@ -67,12 +87,16 @@ export default class BaseStrategy {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        const size = { width: img.width, height: img.height, url };
+        const size: WaterfallItem | any = {
+          width: img.width,
+          height: img.height,
+          url,
+        };
         this.setCachedSize(size, size);
         resolve(size);
       };
       img.onerror = () => reject(new Error(`图片加载失败: ${url}`));
-      img.src = url;
+      img.src = url as string;
     });
   }
 }
