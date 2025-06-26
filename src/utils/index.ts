@@ -1,7 +1,7 @@
 import AscendingStrategy from "../AscendingStrategy/index";
 import EqualWidthStrategy from "../EqualWidthStrategy/index";
 import EqualWidthAscendingStrategy from "../EqualWidthAscendingStrategy/index";
-import type { WaterfallOptions } from "waterfall";
+import type { WaterfallOptions } from "@/typings";
 export const WaterfallLayoutType = {
   Ascending: "ascending",
   EqualWidth: "equal-width",

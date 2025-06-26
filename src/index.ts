@@ -1,6 +1,6 @@
 import { createStrategy, WaterfallLayoutType } from "./utils";
 import type { WaterfallLayoutTypeValue } from "./utils";
-import type { WaterfallOptions } from "waterfall";
+import type { WaterfallOptions } from "./typings";
 export default class WaterfallLayout {
   public $options: WaterfallOptions<WaterfallLayoutTypeValue>;
   private strategy: any;

@@ -3,7 +3,7 @@ import type {
   WaterfallOptions,
   WaterfallItem,
   WaterfallDetailType,
-} from "waterfall";
+} from "../typings";
 import type { WaterfallLayoutTypeValue } from "../utils";
 export default class AscendingStrategy extends BaseStrategy {
   private rows: WaterfallItem[][] = [];

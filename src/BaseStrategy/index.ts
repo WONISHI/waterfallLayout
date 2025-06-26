@@ -3,7 +3,7 @@ import type {
   WaterfallSourceList,
   WaterfallSource,
   WaterfallItem,
-} from "waterfall";
+} from "../typings";
 import type { WaterfallLayoutTypeValue } from "../utils";
 export default class BaseStrategy {
   public options: WaterfallOptions<WaterfallLayoutTypeValue>;

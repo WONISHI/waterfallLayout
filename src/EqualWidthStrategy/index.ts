@@ -1,5 +1,5 @@
 import BaseStrategy from "../BaseStrategy/index";
-import type { WaterfallOptions } from "waterfall";
+import type { WaterfallOptions } from "../typings";
 import type { WaterfallLayoutTypeValue } from "../utils";
 export default class EqualWidthStrategy extends BaseStrategy {
   private rows: Array<any>;

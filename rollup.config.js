@@ -1,8 +1,10 @@
 import babel from "rollup-plugin-babel";
 import serve from "rollup-plugin-serve";
-import typescript from '@rollup/plugin-typescript';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
+import typescript from "@rollup/plugin-typescript";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import alias from "@rollup/plugin-alias";
+import path from "path";
 
 export default {
   input: "./src/index.ts",
@@ -13,6 +15,9 @@ export default {
     sourcemap: true,
   },
   plugins: [
+    alias({
+      entries: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
+    }),
     babel({
       exclude: "node_modules/**",
     }),
@@ -23,6 +28,8 @@ export default {
     }),
     resolve(),
     commonjs(),
-    typescript({ tsconfig: './tsconfig.json' })
+    typescript({
+      tsconfig: "./tsconfig.json"
+    }),
   ],
 };
