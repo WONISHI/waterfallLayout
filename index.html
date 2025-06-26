@@ -40,9 +40,9 @@
 
 <body>
     <div id="app"></div>
-    <script src="./dist/waterfalllayout.js"></script>
+    <script src="./dist/waterfalllayout.umd.js"></script>
     <script type="module">
-        const res = await new Waterfalllayout({
+        const res = await Waterfalllayout.create({
             type: 'ascending',
             count: 1,
             step: 3,

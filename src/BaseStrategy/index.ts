@@ -12,7 +12,7 @@ export default class BaseStrategy {
   private _scrollIndex: number;
   public container: HTMLElement | null;
   private sizeCache: any;
-  public _hasInitialLoaded: boolean;
+  public _hasInitialLoaded: boolean = false;
   constructor(options: WaterfallOptions<WaterfallLayoutTypeValue>) {
     this.options = options;
     this.sizeCache = new Map();
@@ -47,12 +47,12 @@ export default class BaseStrategy {
     }
   }
 
-  toAbsoluteUrl(path) {
+  toAbsoluteUrl(path: WaterfallSource) {
     try {
       if (typeof path === "object") return path;
       return new URL(path).href;
     } catch {
-      return new URL(path, window.location.href).href;
+      return new URL(path as string, window.location.href).href;
     }
   }
 
@@ -73,7 +73,7 @@ export default class BaseStrategy {
     return this.sizeCache.get(this.getCacheKey(url));
   }
 
-  setCachedSize(url: WaterfallSource, size) {
+  setCachedSize(url: WaterfallSource, size: WaterfallSource) {
     this.sizeCache.set(this.getCacheKey(url), size);
   }
 

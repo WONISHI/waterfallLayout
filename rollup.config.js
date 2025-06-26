@@ -17,7 +17,7 @@ export default {
       exclude: "node_modules/**",
     }),
     serve({
-      port: 3000,
+      port: 3001,
       contentBase: "",
       openPage: "/index.html",
     }),

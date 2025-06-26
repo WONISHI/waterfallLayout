@@ -38,9 +38,9 @@ export default class AscendingStrategy extends BaseStrategy {
     this.insertImages(images);
     this.success && this.success(this.waterfallResult());
   }
-  insertImages(images) {
+  insertImages(images: WaterfallItem[]) {
     for (const img of images) {
-      this.pushImage(img, img.url);
+      this.pushImage(img, img.url!);
     }
     return this.rows;
   }
@@ -147,7 +147,7 @@ export default class AscendingStrategy extends BaseStrategy {
     // 保留空实现，兼容性调用
   }
 
-  pushImage(img, url) {
+  pushImage(img: WaterfallItem, url: string) {
     const item = { ...img, url };
     if (this.count === 1 && this.rowIndex === 0) {
       const scaledRow = this.scaleToFit(
@@ -176,7 +176,7 @@ export default class AscendingStrategy extends BaseStrategy {
     }
   }
 
-  scaleToFit(arr, availableWidth, rowIndex) {
+  scaleToFit(arr:WaterfallItem[], availableWidth:number, rowIndex:number) {
     if (arr.length === 1) {
       const scale = availableWidth / arr[0].width;
       return [
