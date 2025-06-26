@@ -31,6 +31,6 @@ export default class WaterfallLayout {
       count: null,
       step: 5,
     };
-    return Object.freeze({ ...defaultOptions, ...options });
+    return { ...defaultOptions, ...options };
   }
 }

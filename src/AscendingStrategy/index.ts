@@ -4,14 +4,16 @@ import type {
   WaterfallItem,
   WaterfallDetailType,
   WaterfallSource,
+  WaterfallSourceList
 } from "../typings";
 export default class AscendingStrategy extends BaseStrategy {
+  public _hasInitialLoaded: boolean;
   private rows: WaterfallItem[][] = [];
+  private _urls: WaterfallSourceList;
   private rowIndex: number;
   private clientWidth: number;
   private gap: number;
   private count: number | undefined | null;
-  public _hasInitialLoaded: boolean;
   private _initialCallbackEmitted: boolean;
   private rowBuffer: any[];
   private step: number;
@@ -28,6 +30,7 @@ export default class AscendingStrategy extends BaseStrategy {
     this.lazyCallback = options.lazyLoadCallback;
     this.step = options.step || 10;
     this.success = options.success;
+    this._urls = options.urls;
     this._hasInitialLoaded = false;
     this._initialCallbackEmitted = false;
   }
@@ -118,7 +121,7 @@ export default class AscendingStrategy extends BaseStrategy {
     if (this.lazyIndex >= urls.length) return;
     const nextBatch = urls
       .slice(this.lazyIndex, this.lazyIndex + this.step)
-      .map((url:WaterfallSource) => this.toAbsoluteUrl(url));
+      .map((url: WaterfallSource) => this.toAbsoluteUrl(url));
     const data = await this.fetchImageSizes(nextBatch);
     this.lazyIndex += data.length;
 
@@ -148,6 +151,7 @@ export default class AscendingStrategy extends BaseStrategy {
 
   append() {
     // 保留空实现，兼容性调用
+    console.log("添加", this);
   }
 
   pushImage(img: WaterfallItem, url: string) {
